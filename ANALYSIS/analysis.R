@@ -11,38 +11,38 @@ theme_set(theme_bw())
 ################################################################################
 ### Step 1: Read in Data ###
 ################################################################################
-epi <- read.csv("./DATA/DATA FOR ANALYSIS/EPI_2010_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+epi <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/EPI_2010_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("country","year","EPI.new","EPI.cc"))%>%
   setNames(c("country_name","year","epi_score","epi_cc_score"))
 
-gpi <- read.csv("./DATA/DATA FOR ANALYSIS/GPI_2008_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+gpi <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/GPI_2008_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("country","year","Overall.Score"))%>%
   setNames(c("country_name","year","gpi_score"))
 
-ppi <- read.csv("./DATA/DATA FOR ANALYSIS/PPI_2009_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+ppi <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/PPI_2009_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Country","Year","PPI.Overall.Score"))%>%
   setNames(c("country_name","year","ppi_score"))
 
-nd_vuln <- read.csv("./DATA/DATA FOR ANALYSIS/ND_Vulnerability_1995_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+nd_vuln <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/ND_Vulnerability_1995_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Name","X2010","X2011","X2012","X2013","X2014","X2015","X2016",
            "X2017","X2018","X2019","X2020","X2021","X2022"))%>%
   setNames(c("country_name","2010","2011","2012", "2013", "2014","2015", "2016", 
              "2017","2018", "2019", "2020","2021","2022"))%>%
   gather(.,"year","nd_vuln_score",-country_name)
 
-gf_ecofoot <- read.csv("./DATA/DATA FOR ANALYSIS/GF_ECOFOOT_PERCAPITA_2010_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+gf_ecofoot <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/GF_ECOFOOT_PERCAPITA_2010_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Country.Name","year","Total_ecofoot"))%>%
   setNames(c("country_name","year","ecofoot_score"))%>%
   mutate(ecofoot_score = as.numeric(ecofoot_score))
 
-mat_foot <- read.csv("./DATA/DATA FOR ANALYSIS/MAT_FOOT_1974_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+mat_foot <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/MAT_FOOT_1974_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Country","Category","X2008","X2009","X2010","X2011","X2012","X2013","X2014","X2015","X2016",
            "X2017","X2018","X2019","X2020","X2021","X2022"))%>%
   setNames(c("country_name","material_category","2008","2009","2010","2011","2012", "2013", "2014","2015", "2016", 
              "2017","2018", "2019", "2020","2021","2022"))%>%
   gather(.,"year","value",-c("country_name","material_category"))
 
-ghg <- read.csv("./DATA/DATA FOR ANALYSIS/co2_ghg.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+ghg <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/co2_ghg.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("country","year","co2_per_capita"))%>%
   setNames(c("country_name","year","ghg"))%>%
   mutate(ghg = as.numeric(ghg))%>%
