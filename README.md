@@ -2,7 +2,7 @@
 
 This directory contains code written in R for all analyses, and a directory for all data used, in:
 
- D. Marcantonio and S. Field. 2025. THe Peace adn Ecological Sustainability Paradox
+ D. Marcantonio and S. Field. 2025. The Peace and Ecological Sustainability Paradox. Submitted to Communications Earth & Environment
  
 ## Data 
 
