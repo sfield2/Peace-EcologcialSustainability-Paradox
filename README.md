@@ -6,7 +6,7 @@ This directory contains code written in R for all analyses, and a directory for 
  
 ## Data 
 
-All data used in this research is provided in folder entitled "DATA". 
+All data used in this research is provided in folder entitled "DATA". Source of all data used in this analsis is documented in /DATA/DATA_ACCESS_README.txt
 
 ## Analysis
 
