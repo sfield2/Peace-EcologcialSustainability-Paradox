@@ -962,3 +962,47 @@ write.csv(regressions,"./OUTPUT/logisticregressions_yearscollapse_yearspredictor
 
 
 
+
+
+
+
+
+################################################################################
+### Step 11: Supplemental Data
+################################################################################
+
+years <- unique(full_scale$year)
+
+for(i in 1:length(years)){
+  year_id <- years[i]
+  
+  full_scale_sub <- subset(full_scale,year == year_id)%>%
+    select(c("epi_score","ghg","gpi_score","ppi_score","nd_vuln_score","ecofoot_score","mf_giga_score_percap"))%>%
+    set_colnames(c("EPI","GHG (CO2 per capita)","GPI","PPI","ND Vulnerability","Ecological Footprint", "Material Footprint"))
+  
+  png(paste("./FIGURES/Supplementals/",year_id,".png",sep=""),height=1700,width=1700) 
+  chart.Correlation(full_scale_sub, histogram=TRUE, pch=19,method=c("spearman"))
+  dev.off()
+}
+
+
+
+for(i in 1:length(years)){
+  year_id <- years[i]
+  
+  full_scale_sub <- subset(full_scale,year == year_id)%>%
+    select(c("epi_score","ghg","gpi_score","ppi_score","nd_vuln_score","ecofoot_score","mf_giga_score_percap"))
+  
+ t <- rcorr(as.matrix(full_scale_sub),type=c("spearman"))
+ 
+ r <- as.data.frame(t$r)
+ p <-  as.data.frame(t$P)
+
+ write.csv(r,paste("./OUTPUT/Supplementals/",year_id,"_spearman_r.csv",sep=""))         
+ write.csv(p,paste("./OUTPUT/Supplementals/",year_id,"_spearman_p.csv",sep=""))  
+ 
+}
+
+
+
+
