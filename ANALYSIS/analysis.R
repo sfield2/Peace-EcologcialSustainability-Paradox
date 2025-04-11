@@ -1,6 +1,6 @@
 packages <-c('dplyr','magrittr','tidyverse','corrr',
              'ggplot2','ggcorrplot','ggpubr','PerformanceAnalytics','ggtext','sf',
-             'ResourceSelection')
+             'ResourceSelection','Hmisc')
 for(p in packages) if(p %in% rownames(installed.packages()) == F) { install.packages(p) }
 for(p in packages) suppressPackageStartupMessages(library(p,quietly=T,character.only=T))
 
@@ -54,7 +54,7 @@ ghg <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSu
 ### Step 1: Measure cumulative material footprint and calculate per capita ###
 ################################################################################
 # step 1.1: read in population dataset
-population <- read.csv("./DATA/DATA FOR ANALYSIS/POPULATIONS.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+population <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/POPULATIONS.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Location","Time","TPopulation1Jan"))%>%
   setNames(c("country_name","year","population_thousands"))%>%
   mutate(population = population_thousands * 1000)%>%
@@ -63,7 +63,7 @@ population <- read.csv("./DATA/DATA FOR ANALYSIS/POPULATIONS.csv",header=T,fileE
 # step 1.2: run calculations
 mat_foot <- mat_foot%>%
   group_by(country_name,year)%>%
-  summarize(mf_score = sum(value))%>%
+  dplyr::summarize(mf_score = sum(value))%>%
   merge(.,population,by=c("country_name","year"))%>%
   mutate(mf_score = (mf_score/1102311310)/population)%>% ## 1102311310 in 1 gigaton
   select(-c("population"))
@@ -217,9 +217,9 @@ spearman_full <- rbind(spearman_2010,spearman_2011,spearman_2012,spearman_2013,
 
 
 spearman_p_full_stack <- rbind(spearman_p_2010,spearman_p_2011,spearman_p_2012,spearman_p_2013,
-                       spearman_p_2014,spearman_p_2015,spearman_p_2016,spearman_p_2017,
-                       spearman_p_2018,spearman_p_2019,spearman_p_2020,spearman_p_2021,
-                       spearman_p_2022)
+                               spearman_p_2014,spearman_p_2015,spearman_p_2016,spearman_p_2017,
+                               spearman_p_2018,spearman_p_2019,spearman_p_2020,spearman_p_2021,
+                               spearman_p_2022)
 
 spearman_full_p <-spearman_p_full_stack%>%
   mutate(spearman_p = ifelse(spearman_p>0.05, ">0.05","sig"))%>%
@@ -289,16 +289,16 @@ for(i in 1:length(years)){
 
 ## step 8.2: combine outputs for summary table
 pearson_full <- rbind(pearson_2010,pearson_2011,pearson_2012,pearson_2013,
-                       pearson_2014,pearson_2015,pearson_2016,pearson_2017,
-                       pearson_2018,pearson_2019,pearson_2020,pearson_2021,
-                       pearson_2022)%>%
+                      pearson_2014,pearson_2015,pearson_2016,pearson_2017,
+                      pearson_2018,pearson_2019,pearson_2020,pearson_2021,
+                      pearson_2022)%>%
   spread(.,vars,pearson)
 
 
 pearson_p_full_stack <- rbind(pearson_p_2010,pearson_p_2011,pearson_p_2012,pearson_p_2013,
-                         pearson_p_2014,pearson_p_2015,pearson_p_2016,pearson_p_2017,
-                         pearson_p_2018,pearson_p_2019,pearson_p_2020,pearson_p_2021,
-                         pearson_p_2022)
+                              pearson_p_2014,pearson_p_2015,pearson_p_2016,pearson_p_2017,
+                              pearson_p_2018,pearson_p_2019,pearson_p_2020,pearson_p_2021,
+                              pearson_p_2022)
 
 
 pearson_full_p <-pearson_p_full_stack%>%
@@ -345,7 +345,7 @@ spearman_full_stack <- spearman_full%>%
 var_names <- c(`EPIND Vulnerability` = "EPI v. ND Vulnerability",
                `EPIGPI` = "EPI v. GPI",
                `EPIPPI` = "EPI v. PPI",
-              
+               
                `GHGND Vulnerability` = "GHG v. ND Vulnerability",
                `GHGGPI` = "GHG v. GPI",
                `GHGPPI` = "GHG v. PPI",
@@ -353,11 +353,11 @@ var_names <- c(`EPIND Vulnerability` = "EPI v. ND Vulnerability",
                `Ecological FootprintND Vulnerability` = "Ecological Footprint v. ND Vulnerability",
                `Ecological FootprintGPI` = "Ecological Footprint v. GPI",
                `Ecological FootprintPPI` = "Ecological Footprint v. PPI",
-
+               
                `Material FootprintND Vulnerability` = "Material Footprint v. ND Vulnerability",
                `GPIMaterial Footprint` = "Material Footprint v. GPI",
                `Material FootprintPPI`="Material Footprint v. PPI"
-               )
+)
 
 
 pearson_full_stack$vars <- factor(pearson_full_stack$vars, 
@@ -438,7 +438,7 @@ fig_1<-ggarrange(p1,p2,p3,
 
 
 
-png('./FIGURES/Current/EPI v. ND vuln, GPI, PPI.png',height=1400,width=2200)
+png('./FIGURES/EPI v. ND vuln, GPI, PPI.png',height=1400,width=2200)
 fig_1
 dev.off()
 
@@ -697,33 +697,94 @@ dev.off()
 ## clean up environment
 rm(list=ls())
 
+
+
+
+
+
+################################################################################
+### Step 10: Supplemental Data
+################################################################################
+
+years <- unique(full_scale$year)
+
+for(i in 1:length(years)){
+  year_id <- years[i]
+  
+  full_scale_sub <- subset(full_scale,year == year_id)%>%
+    select(c("epi_score","ghg","gpi_score","ppi_score",
+             "nd_vuln_score","ecofoot_score",
+             "mf_score"))%>%
+    set_colnames(c("EPI","GHG (CO2 per capita)","GPI","PPI","ND Vulnerability","Ecological Footprint", "Material Footprint"))
+  
+  png(paste("./FIGURES/Supplementals2/",year_id,".png",sep=""),height=1700,width=1700) 
+  chart.Correlation(full_scale_sub, histogram=TRUE, pch=19,method=c("spearman"))
+  dev.off()
+}
+
+
+
+
+for(i in 1:length(years)){
+  year_id <- years[i]
+  
+  full_scale_sub <- subset(full_scale,year == year_id)%>%
+    select(c("epi_score","ghg","gpi_score","ppi_score",
+             "nd_vuln_score","ecofoot_score",
+             "mf_score"))
+  
+  t <- rcorr(as.matrix(full_scale_sub),type=c("spearman"))
+  
+  r <- as.data.frame(t$r)
+  p <-  as.data.frame(t$P)
+  
+  write.csv(r,paste("./OUTPUT/Supplementals/",year_id,"_spearman_r.csv",sep=""))         
+  write.csv(p,paste("./OUTPUT/Supplementals/",year_id,"_spearman_p.csv",sep=""))  
+  
+}
+
+
+
+
+### clean up environment 
+rm(list=ls())
+
+
+
+
+
+
+
+
+
+
 ################################################################################
 ### Step 10: Generalized Linear Models
 ################################################################################
-gpi <- read.csv("./DATA/DATA FOR ANALYSIS/GPI_2008_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+gpi <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/GPI_2008_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("country","year","External.Conflicts.Fought","Internal.Conflicts.Fought"))%>%
   setNames(c("country_name","year","external_score","internal_score"))
 
-gf_ecofoot <- read.csv("./DATA/DATA FOR ANALYSIS/GF_ECOFOOT_PERCAPITA_2010_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+gf_ecofoot <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/GF_ECOFOOT_PERCAPITA_2010_2022.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Country.Name","year","Total_ecofoot"))%>%
   setNames(c("country_name","year","ecofoot_score"))%>%
   mutate(ecofoot_score = as.numeric(ecofoot_score))
 
-mat_foot <- read.csv("./DATA/DATA FOR ANALYSIS/MAT_FOOT_1974_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+mat_foot <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/MAT_FOOT_1974_2024.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Country","Category","X2008","X2009","X2010","X2011","X2012","X2013","X2014","X2015","X2016",
            "X2017","X2018","X2019","X2020","X2021","X2022"))%>%
   setNames(c("country_name","material_category","2008","2009","2010","2011","2012", "2013", "2014","2015", "2016", 
              "2017","2018", "2019", "2020","2021","2022"))%>%
   gather(.,"year","value",-c("country_name","material_category"))
 
-ghg <- read.csv("./DATA/DATA FOR ANALYSIS/co2_ghg.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+ghg <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/co2_ghg.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("country","year","co2_per_capita"))%>%
   setNames(c("country_name","year","ghg"))%>%
   mutate(ghg = as.numeric(ghg))%>%
   filter(complete.cases(.))
 
 # step 10.1: read in population dataset
-population <- read.csv("./DATA/DATA FOR ANALYSIS/POPULATIONS.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
+population <- read.csv("https://raw.githubusercontent.com/sfield2/Peace_EnvironmentalSustainability_Paradox/refs/heads/main/DATA/POPULATIONS.csv",header=T,fileEncoding = 'UTF-8-BOM')%>%
   select(c("Location","Time","TPopulation1Jan"))%>%
   setNames(c("country_name","year","population_thousands"))%>%
   mutate(population = population_thousands * 1000)%>%
@@ -732,10 +793,12 @@ population <- read.csv("./DATA/DATA FOR ANALYSIS/POPULATIONS.csv",header=T,fileE
 # step 10.2: rerun calculations for material footprint
 mat_foot <- mat_foot%>%
   group_by(country_name,year)%>%
-  summarize(mf_score = sum(value))%>%
+  dplyr::summarize(mf_score = sum(value))%>%
   merge(.,population,by=c("country_name","year"))%>%
   mutate(mf_score = (mf_score/1102311310)/population)%>% ## 1102311310 in 1 gigaton
   select(-c("population"))
+
+
 
 # step 10.3: bin categorical variables
 gpi<-gpi%>%
@@ -789,7 +852,7 @@ for(i in 1:length(years)){
   
   #hosmer lemshow test
   hl_test <- hoslem.test(model$y, fitted(model))
-
+  
   # assign values to correct location
   regressions[c("GHG"),c("internal_coef")] <- coef[2]
   regressions[c("GHG"),c("internal_coef_p")] <- p[2]
@@ -797,10 +860,10 @@ for(i in 1:length(years)){
   regressions[c("GHG"),c("internal_pseudoR")] <- pseudo_r
   regressions[c("GHG"),c("internal_hoslem")] <- as.numeric(hl_test[1])
   regressions[c("GHG"),c("internal_hoslem_p")] <- as.numeric(hl_test[3])
-
-
   
-
+  
+  
+  
   
   
   ## material footprint
@@ -872,7 +935,7 @@ for(i in 1:length(years)){
   pseudo_r <- (1 - (as.numeric(model_list[4])/as.numeric(model_list[8]))) # 1- (residual devicance/null deviance)
   
   #hosmer lemshow test
-  hl_test <- hoslem.test(model$y, fitted(model))
+  hl_test <- ResourceSelection::hoslem.test(model$y, fitted(model))
   
   # assign values to correct location
   regressions[c("GHG"),c("external_coef")] <- coef[2]
@@ -900,7 +963,7 @@ for(i in 1:length(years)){
   pseudo_r <- (1 - (as.numeric(model_list[4])/as.numeric(model_list[8]))) # 1- (residual devicance/null deviance)
   
   #hosmer lemshow test
-  hl_test <- hoslem.test(model$y, fitted(model))
+  hl_test <- ResourceSelection::hoslem.test(model$y, fitted(model))
   
   # assign values to correct location
   regressions[c("Material Footprint"),c("external_coef")] <- coef[2]
@@ -925,7 +988,7 @@ for(i in 1:length(years)){
   pseudo_r <- (1 - (as.numeric(model_list[4])/as.numeric(model_list[8]))) # 1- (residual devicance/null deviance)
   
   #hosmer lemshow test
-  hl_test <- hoslem.test(model$y, fitted(model))
+  hl_test <- ResourceSelection::hoslem.test(model$y, fitted(model))
   
   # assign values to correct location
   regressions[c("Ecological Footprint"),c("external_coef")] <- coef[2]
@@ -950,59 +1013,10 @@ glms_full <- rbind(regressions_2010,regressions_2011,regressions_2012,regression
                    regressions_2014,regressions_2015,regressions_2016,regressions_2017,
                    regressions_2018,regressions_2019,regressions_2020,regressions_2021,
                    regressions_2022)
-  mutate(internal_coef_p = ifelse(internal_coef_p >0.05, ">0.05","sig"))%>%
+mutate(internal_coef_p = ifelse(internal_coef_p >0.05, ">0.05","sig"))%>%
   mutate(external_coef_p = ifelse(external_coef_p >0.05, ">0.05","sig"))%>%
   mutate(internal_hoslem_p = ifelse(internal_hoslem_p >0.05, ">0.05","sig"))%>%
   mutate(external_hoslem_p = ifelse(external_hoslem_p >0.05, ">0.05","sig"))
 
 
 write.csv(regressions,"./OUTPUT/logisticregressions_yearscollapse_yearspredictor.csv")
-
-
-
-
-
-
-
-
-
-
-################################################################################
-### Step 11: Supplemental Data
-################################################################################
-
-years <- unique(full_scale$year)
-
-for(i in 1:length(years)){
-  year_id <- years[i]
-  
-  full_scale_sub <- subset(full_scale,year == year_id)%>%
-    select(c("epi_score","ghg","gpi_score","ppi_score","nd_vuln_score","ecofoot_score","mf_giga_score_percap"))%>%
-    set_colnames(c("EPI","GHG (CO2 per capita)","GPI","PPI","ND Vulnerability","Ecological Footprint", "Material Footprint"))
-  
-  png(paste("./FIGURES/Supplementals/",year_id,".png",sep=""),height=1700,width=1700) 
-  chart.Correlation(full_scale_sub, histogram=TRUE, pch=19,method=c("spearman"))
-  dev.off()
-}
-
-
-
-for(i in 1:length(years)){
-  year_id <- years[i]
-  
-  full_scale_sub <- subset(full_scale,year == year_id)%>%
-    select(c("epi_score","ghg","gpi_score","ppi_score","nd_vuln_score","ecofoot_score","mf_giga_score_percap"))
-  
- t <- rcorr(as.matrix(full_scale_sub),type=c("spearman"))
- 
- r <- as.data.frame(t$r)
- p <-  as.data.frame(t$P)
-
- write.csv(r,paste("./OUTPUT/Supplementals/",year_id,"_spearman_r.csv",sep=""))         
- write.csv(p,paste("./OUTPUT/Supplementals/",year_id,"_spearman_p.csv",sep=""))  
- 
-}
-
-
-
-
